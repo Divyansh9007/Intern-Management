@@ -142,7 +142,8 @@ const Sidebar = () => {
         </nav>
 
         {/* Bottom Section */}
-        <div className="p-4 border-t border-gray-200/50 space-y-2 flex-shrink-0">
+         <div className="p-4 border-t border-gray-200/50 flex flex-col gap-2 flex-shrink-0">
+
           <NavLink
             to="/profile"
             onClick={closeMobileMenu}
