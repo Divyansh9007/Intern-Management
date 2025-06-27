@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Search, MoreVertical, Phone, Video, Paperclip, Smile, Plus, X } from 'lucide-react';
+import { Send, Search, MoreVertical, Phone, Video, Paperclip, Smile, Plus, X, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import toast from 'react-hot-toast';
@@ -11,6 +11,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
+  const [showChatList, setShowChatList] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -38,7 +39,6 @@ const Messages = () => {
     if (newMessage.trim() && selectedChat && user) {
       sendMessage(selectedChat, newMessage.trim(), user.id, user.name);
       setNewMessage('');
-      toast.success('Message sent!');
     }
   };
 
@@ -81,9 +81,15 @@ const Messages = () => {
 
   const handleChatSelect = (chatId: string) => {
     setSelectedChat(chatId);
+    setShowChatList(false); // Hide chat list on mobile when chat is selected
     if (user) {
       markMessagesAsRead(chatId, user.id);
     }
+  };
+
+  const handleBackToChats = () => {
+    setShowChatList(true);
+    setSelectedChat('');
   };
 
   // Get available users to chat with
@@ -94,10 +100,10 @@ const Messages = () => {
   return (
     <div className="h-[calc(100vh-8rem)] flex bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Chat List */}
-      <div className="w-80 border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
+      <div className={`${showChatList ? 'flex' : 'hidden'} lg:flex w-full lg:w-80 border-r border-gray-200 flex-col`}>
+        <div className="p-4 lg:p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Messages</h1>
             {user?.role === 'admin' && (
               <button
                 onClick={() => setIsNewChatModalOpen(true)}
@@ -114,7 +120,7 @@ const Messages = () => {
               placeholder="Search conversations..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
             />
           </div>
         </div>
@@ -129,23 +135,23 @@ const Messages = () => {
               <div
                 key={chat.id}
                 onClick={() => handleChatSelect(chat.id)}
-                className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors duration-200 ${
+                className={`p-3 lg:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors duration-200 ${
                   selectedChat === chat.id ? 'bg-indigo-50 border-r-4 border-r-indigo-500' : ''
                 }`}
               >
                 <div className="flex items-center">
                   <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="w-10 lg:w-12 h-10 lg:h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                       {initials}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                    <div className="absolute -bottom-1 -right-1 w-3 lg:w-4 h-3 lg:h-4 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                   <div className="ml-3 flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 truncate">{otherParticipant}</h3>
+                      <h3 className="font-semibold text-gray-900 truncate text-sm lg:text-base">{otherParticipant}</h3>
                       <span className="text-xs text-gray-500">{chat.time}</span>
                     </div>
-                    <p className="text-sm text-gray-500 truncate mt-1">{chat.lastMessage}</p>
+                    <p className="text-xs lg:text-sm text-gray-500 truncate mt-1">{chat.lastMessage}</p>
                   </div>
                   {unreadCount > 0 && (
                     <div className="ml-2 bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -166,40 +172,46 @@ const Messages = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className={`${!showChatList ? 'flex' : 'hidden'} lg:flex flex-1 flex-col min-w-0`}>
         {selectedChatData ? (
           <>
             {/* Chat Header */}
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <div className="p-4 lg:p-6 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center">
+                <button
+                  onClick={handleBackToChats}
+                  className="lg:hidden mr-3 p-2 text-gray-400 hover:text-gray-600"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-8 lg:w-10 h-8 lg:h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                     {selectedChatData.participants.find(p => p !== user?.name)?.split(' ').map(n => n[0]).join('') || 'U'}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                  <div className="absolute -bottom-1 -right-1 w-2 lg:w-3 h-2 lg:h-3 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <div className="ml-3">
-                  <h2 className="font-semibold text-gray-900">
+                  <h2 className="font-semibold text-gray-900 text-sm lg:text-base">
                     {selectedChatData.participants.find(p => p !== user?.name) || selectedChatData.participants[0]}
                   </h2>
-                  <p className="text-sm text-gray-500">Online</p>
+                  <p className="text-xs lg:text-sm text-gray-500">Online</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 lg:space-x-3">
                 <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                  <Phone className="w-5 h-5" />
+                  <Phone className="w-4 lg:w-5 h-4 lg:h-5" />
                 </button>
                 <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                  <Video className="w-5 h-5" />
+                  <Video className="w-4 lg:w-5 h-4 lg:h-5" />
                 </button>
                 <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                  <MoreVertical className="w-5 h-5" />
+                  <MoreVertical className="w-4 lg:w-5 h-4 lg:h-5" />
                 </button>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4">
               {chatMessages.length > 0 ? (
                 chatMessages.map(message => {
                   const isOwn = message.senderId === user?.id;
@@ -210,7 +222,7 @@ const Messages = () => {
                     >
                       <div className="max-w-xs lg:max-w-md">
                         <div
-                          className={`px-4 py-2 rounded-2xl ${
+                          className={`px-3 lg:px-4 py-2 rounded-2xl ${
                             isOwn
                               ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
                               : 'bg-gray-100 text-gray-900'
@@ -218,10 +230,9 @@ const Messages = () => {
                         >
                           <p className="text-sm">{message.content}</p>
                         </div>
-                    <p className={`text-xs mt-1 ${isOwn ? 'text-right text-gray-500' : 'text-gray-500'}`}>
-  {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-</p>
-
+                        <p className={`text-xs mt-1 ${isOwn ? 'text-right text-gray-500' : 'text-gray-500'}`}>
+                          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
                     </div>
                   );
@@ -238,13 +249,13 @@ const Messages = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-6 border-t border-gray-200">
-              <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
+            <div className="p-4 lg:p-6 border-t border-gray-200">
+              <form onSubmit={handleSendMessage} className="flex items-center space-x-2 lg:space-x-3">
                 <button
                   type="button"
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                 >
-                  <Paperclip className="w-5 h-5" />
+                  <Paperclip className="w-4 lg:w-5 h-4 lg:h-5" />
                 </button>
                 <div className="flex-1 relative">
                   <input
@@ -252,21 +263,21 @@ const Messages = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 lg:px-4 py-2 lg:py-3 pr-10 lg:pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm lg:text-base"
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded transition-colors duration-200"
+                    className="absolute right-2 lg:right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded transition-colors duration-200"
                   >
-                    <Smile className="w-5 h-5" />
+                    <Smile className="w-4 lg:w-5 h-4 lg:h-5" />
                   </button>
                 </div>
                 <button
                   type="submit"
                   disabled={!newMessage.trim()}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-xl hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-2 lg:p-3 rounded-xl hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 lg:w-5 h-4 lg:h-5" />
                 </button>
               </form>
             </div>
@@ -283,7 +294,7 @@ const Messages = () => {
 
       {/* New Chat Modal */}
       {isNewChatModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Start New Chat</h3>

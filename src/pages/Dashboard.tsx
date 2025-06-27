@@ -119,17 +119,17 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className={`${stat.color} p-3 rounded-full text-white mr-4`}>
+              <div className={`${stat.color} p-3 rounded-full text-white mr-4 flex-shrink-0`}>
                 {stat.icon}
               </div>
-              <div>
-                <p className="text-sm text-gray-600">{stat.title}</p>
+              <div className="min-w-0">
+                <p className="text-sm text-gray-600 truncate">{stat.title}</p>
                 <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
               </div>
             </div>
@@ -137,31 +137,49 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Task Completion Trend</h2>
-        <Bar data={chartData} />
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4">Task Completion Trend</h2>
+        <div className="h-64 sm:h-80">
+          <Bar 
+            data={chartData} 
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Activities</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">Recent Activities</h2>
           <div className="space-y-4">
             {getRecentActivities().map((activity, index) => (
               <div key={index} className="flex items-center justify-between py-2 border-b">
-                <p className="text-gray-600">{activity.text}</p>
-                <span className="text-sm text-gray-400">{activity.time}</span>
+                <p className="text-gray-600 text-sm sm:text-base pr-2">{activity.text}</p>
+                <span className="text-xs sm:text-sm text-gray-400 flex-shrink-0">{activity.time}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Upcoming Deadlines</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">Upcoming Deadlines</h2>
           <div className="space-y-4">
             {getUpcomingDeadlines().map((deadline, index) => (
               <div key={index} className="flex items-center justify-between py-2 border-b">
-                <p className="text-gray-600">{deadline.task}</p>
-                <span className="text-sm text-red-500">{deadline.deadline}</span>
+                <p className="text-gray-600 text-sm sm:text-base pr-2">{deadline.task}</p>
+                <span className="text-xs sm:text-sm text-red-500 flex-shrink-0">{deadline.deadline}</span>
               </div>
             ))}
           </div>

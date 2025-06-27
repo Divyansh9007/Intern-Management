@@ -20,7 +20,7 @@ import {
   updatePassword as firebaseUpdatePassword,
   User
 } from 'firebase/auth';
-import { auth, db } from '../config/firebase';
+import { auth, secondaryAuth, db } from '../config/firebase';
 
 // Collections
 const COLLECTIONS = {
@@ -35,7 +35,31 @@ const COLLECTIONS = {
 
 // Auth Services
 export const authService = {
-  // Register new user
+  // Register new user using secondary auth (for intern creation)
+  async registerIntern(email: string, password: string, userData: any) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+      const user = userCredential.user;
+      
+      // Save additional user data to Firestore
+      await setDoc(doc(db, COLLECTIONS.INTERNS, user.uid), {
+        ...userData,
+        uid: user.uid,
+        email: email,
+        createdAt: serverTimestamp(),
+        status: 'Active'
+      });
+      
+      // Sign out from secondary auth to prevent interference
+      await signOut(secondaryAuth);
+      
+      return { success: true, user };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Register new user (general registration)
   async register(email: string, password: string, userData: any) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -211,21 +235,10 @@ export const firestoreService = {
 export const internService = {
   async createIntern(internData: any) {
     try {
-      // Store current user to restore later
-      const currentUser = auth.currentUser;
-      
-      // Create auth account for intern
-      const authResult = await authService.register(internData.email, internData.password || 'intern123', internData);
+      // Use secondary auth to prevent admin logout
+      const authResult = await authService.registerIntern(internData.email, internData.password || 'intern123', internData);
       
       if (authResult.success) {
-        // Sign out the newly created intern account
-        await signOut(auth);
-        
-        // Re-authenticate the admin if they were logged in
-        if (currentUser && currentUser.email === 'divyanshpansari123@gmail.com') {
-          // Admin will remain logged in through the auth state listener
-        }
-        
         return { success: true, id: authResult.user?.uid };
       }
       return authResult;

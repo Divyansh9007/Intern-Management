@@ -77,9 +77,9 @@ function AppContent() {
             <ProtectedRoute>
               <div className="flex min-h-screen">
                 <Sidebar />
-                <div className="flex-1 overflow-hidden">
-                  <div className="h-full overflow-y-auto">
-                    <div className="p-8">
+                <div className="flex-1 lg:ml-0 min-w-0">
+                  <div className="h-full">
+                    <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">
                       <Routes>
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/interns" element={<ProtectedRoute requiredRole="admin"><InternList /></ProtectedRoute>} />
